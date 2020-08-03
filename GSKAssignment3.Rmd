@@ -1,0 +1,380 @@
+---
+title: "GSK Assignment 3"
+author: "GS Kumbhare"
+date: "03/08/2020"
+output:
+  word_document: default
+  html_document: default
+---
+
+<h3>Objective</h3>
+
+
+Objective is to find best classification model that can fit air quality data set. We also took relationship between error rates and model complexity. We also investigate relationship between several predictor and response variable.
+
+<h3>Data description</h3>
+
+
+The data set we have is obtained from R directory of datasets. We obtained the Airquality data for a period of 5 month. In total we have 153 instances in the dataset. In this the class is months number.
+
+
+<h3>Attributes of data</h3>
+1.	Ozone level
+2.	Solar radiation
+3.	Windspeed
+4.	Temperature 
+5.	Month
+6.	Day
+
+
+<h3>Libraries</h3>
+
+
+Libraries needed for classification model
+
+```{r}
+library(ggthemes)
+library(ggplot2)
+library(caret)
+library(ggiraphExtra)
+library(ggplot2)
+library(broom)
+library(readr)
+library(MASS)
+library(e1071)
+library(nnet)
+library(corrplot)
+library(tidyverse)
+library(car)
+```
+
+<h3>Dataset</h3>
+
+We load our dataset in the console
+
+```{r}
+str(airquality)
+```
+From the dataset we loaded we can see that there are NA values in our data set
+Next we remove na values so that our model works good.
+
+```{r}
+na<- na.omit(airquality)
+str(na)
+```
+Now we summarise the clean dataset
+
+```{r}
+summary(na)
+```
+First we find correlation between all the variables
+
+```{r}
+cor(na)
+```
+
+We make our correlation plot for our data set
+```{r}
+correlations <- cor(na[,1:4])
+corrplot(correlations, method = "square")
+```
+<h3>Modelling</h3>
+
+We will be using forward selection method for our modeling. In this method we will start with 1 predictor and increase to 3 predictor for each model
+
+Our First model will be linear regression model
+
+<h2> Linear regression Model</h2>
+<h3> 1. Model1 of linear regression </h3>
+```{r}
+modellr1<- lm(Ozone~Solar.R, data = na)
+modellr1
+AIC(modellr1)
+BIC(modellr1)
+summary(modellr1)
+```
+From the above analysis of Ozone according to Solar radiation the value of 
+residual standard error and multiple R-squared values are 31.33 and 12.13%
+respectively. 
+
+<h3>2. Model 2 of linear regression </h3>
+```{r}
+modellr2<- lm(Ozone~Solar.R+ Wind, data = na)
+modellr2
+AIC(modellr2)
+BIC(modellr2)
+summary(modellr2)
+```
+
+Our Residual standar error is 24.92 and multiple R-squared value is 44.95%.
+
+<h3>3. Model3 of linear regression</h3>
+```{r}
+modellr3<- lm(Ozone~Solar.R + Wind + Temp, data = na)
+modellr3
+AIC(modellr3)
+BIC(modellr3)
+summary(modellr3)
+```
+
+Our residual standard error and Multple R-Squared value is 21.18 and 60.59%
+respectively.
+
+<h3> Summary Linear regression </h3>
+With our analysis of linear regression models we see that as we increase number
+of predictors our value of residual standard error decreases and multiple
+R-Squared value increases. This shows that increase in predictor variables in
+reduces our error rate and increases accuracy. 
+
+<h2> Logistic regression </h2>
+
+We will be using Logistic regression for our analysis further.
+<h3>1. Model 1 of logistic regression</h3>
+```{r}
+#We use logistic regression with one predictor
+#1.first predictors is Solar radiation  
+log_fit1=glm(Ozone~Solar.R, data=na)
+print(log_fit1)
+glance(log_fit1)
+```
+
+Our AIC value for model 1 of logistic regression is 1083.7
+
+<h3>2. Model2 of logistic regression</h3>
+
+```{r}
+#We use logistic regression with one predictor
+#1.first predictors is Solar radiation  
+log_fit2=glm(Ozone~Solar.R + Wind, data=na)
+print(log_fit2)
+glance(log_fit2)
+```
+
+
+In our model 2 AIC value is 1033.81. And our BIC value is 1044.65.
+
+<h3>3. Model3 of logistic regression</h3>
+```{r}
+#We use logistic regression with one predictor
+#1.first predictors is Solar radiation  
+log_fit3=glm(Ozone~Solar.R+ Wind + Temp, data=na)
+print(log_fit3)
+glance(log_fit3)
+```
+
+Lower AIc value tells that the model is closer to the truth. And lower BIC 
+mean the model is considered to be true model.
+
+Lets plot this in a graph.
+
+```{r}
+dat1 <- data.frame(No_of_Predictors =c(1,2,3), AIC = c(1083.7, 1033.8, 998.7171))
+
+dat1
+```
+```{r}
+ggplot(dat1, aes(x=No_of_Predictors, y=AIC)) +
+  geom_point() +
+  geom_line() +
+     labs(x="Model Complexity (No. of Predictors)", y="AIC", title="AIC changes with increase of variable/ change in ")
+```
+
+<h3> Summary of Logistic Regeression</h3>
+
+1. We can see that as the number of variables increases the model truthfulness 
+ increases.
+2. It implies that the performance of model improves as we increase the number of
+ predictors.
+
+<h2> KFold cross validation linear mean regression</h2>
+In K-fold Cross validation the idea is to radomly divide the data into K equal 
+sized parts.We leave out one part and fit the model to other remaining parts combined.
+At last we obtain prediction for teh left out part. 
+
+First we make our linear mean regression model. 
+<h3>1. Kfold LM</h3>
+```{r}
+#kfold With linear mean regression method
+
+set.seed(1)
+train.control <- trainControl(method = "cv", number = 10)
+# Train the model1
+modelkfold1 <- train(Ozone ~ Solar.R , data = na , method = "lm",
+                     trControl = train.control)
+# Summarize the results of model 1
+print(modelkfold1)
+```
+
+Our RMSE value is 30.63.
+
+<h3>Kfold lm model 2</h3>
+
+```{r}
+#kfold With linear mean regression method
+
+set.seed(1)
+train.control <- trainControl(method = "cv", number = 10)
+# Train the model1
+modelkfold2 <- train(Ozone ~ Solar.R + Wind , data = na , method = "lm",
+                     trControl = train.control)
+# Summarize the results of model 2
+print(modelkfold2)
+```
+
+Out RMSE value is 24.70
+
+<h3> Kfold LM Model 3</h3>
+```{r}
+#kfold With linear mean regression method
+
+set.seed(1)
+train.control <- trainControl(method = "cv", number = 10)
+# Train the model3
+modelkfold3 <- train(Ozone ~ Solar.R+ Wind + Temp , data = na , method = "lm",
+                     trControl = train.control)
+# Summarize the results of model 3
+print(modelkfold3)
+```
+
+Value of RMSE has reduced to 20.75. 
+We plot all the RMSE values.
+
+```{r}
+dat2 <- data.frame(No_of_Predictors =c(1,2,3), RMSE= c(30.63, 24.75, 20.75))
+
+dat2
+
+ggplot(dat2, aes(x=No_of_Predictors, y=RMSE)) +
+  geom_point() +
+  geom_line() +
+     labs(x="Model Complexity (No. of Predictors)", y="RMSE", title="RMSE changes with increase of variable/ change in Models ")
+```
+
+<h3> Summary of Kfold LM</h3>
+With lower RMSE of a model the model has better predictions. The last model with 3 predictors has lowest root mean square error. That means model with 3 prediction is better than model with lower predictors. 
+
+<h2>KNN Model </h2>
+K nearest neighbour is an instance based learnign, where the function is only approximated locally and all the other computation is deferred untill function evaluation.
+Since this algorithm relies on distance for teh classifiation, the training dataset is normalized to increase accuracy.
+
+<h3>1. Model1 With 1 predictor</h3>
+```{r}
+#knn model 1
+trControl <- trainControl(method  = "cv",
+                          number  = 3)
+Modelknn1 <- train(Ozone ~ Solar.R,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = 10),
+             trControl  = trControl,
+             data       = na)
+Modelknn1
+```
+
+Root mean square error value for model 1 of KNN is 30.289.
+
+<h3>2. Model 2</h2>
+
+```{r}
+#knn model 1
+trControl <- trainControl(method  = "cv",
+                          number  = 3)
+Modelknn2 <- train(Ozone ~ Solar.R + Wind,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = 10),
+             trControl  = trControl,
+             data       = na)
+Modelknn2
+```
+
+The RMSE value of model 2 of knn is 28.57. It seems like with increase in predictors the value of RMSE is drecreasing. 
+
+<h3>3. Model 3 </h3>
+
+```{r}
+#knn model 1
+trControl <- trainControl(method  = "cv",
+                          number  = 3)
+Modelknn3 <- train(Ozone ~ Solar.R + Wind + Temp,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = 10),
+             trControl  = trControl,
+             data       = na)
+Modelknn3
+```
+Our model 3 RMSE value is 25.010.
+
+```{r}
+dat3 <- data.frame(No_of_Predictors =c(1,2,3), RMSE= c(30.28, 28.57, 25.010))
+
+dat3
+
+ggplot(dat3, aes(x=No_of_Predictors, y=RMSE)) +
+  geom_point() +
+  geom_line() +
+     labs(x="Model Complexity (No. of Predictors)", y="RMSE", title="RMSE changes with increase of variable/ change in KNN Models ")
+```
+<h2> LOOCV Models</h3>
+
+In LOOCV model we leave one data point and build model on the rest of dataset. Then we test the model against the data point that was left out in step one and record the test error associated with it.
+
+<h3> Model1 LOOCV</h3>
+
+```{r}
+#LOOCV for one predictor 
+train.control.loocv <- trainControl(method = "LOOCV")
+# Train the model
+modelloocv1 <- train(Ozone ~Solar.R, data = na, method = "lm",
+               trControl = train.control.loocv)
+# Summarize the results
+print(modelloocv1)
+```
+
+In LOOCV model 1 our RMSE value is 31.51877 with one predictor.
+
+<h3>2. Model 2 KNN </h3>
+```{r}
+#LOOCV for one predictor 
+train.control.loocv <- trainControl(method = "LOOCV")
+# Train the model
+modelloocv2 <- train(Ozone ~Solar.R +Wind, data = na, method = "lm",
+               trControl = train.control.loocv)
+# Summarize the results
+print(modelloocv2)
+```
+
+In our second model RMSE is 25.34. 
+
+<h3>3. Model 3 LOOCV</h3>
+```{r}
+#LOOCV for one predictor 
+train.control.loocv <- trainControl(method = "LOOCV")
+# Train the model
+modelloocv3 <- train(Ozone ~Solar.R + Wind + Temp, data = na, method = "lm",
+               trControl = train.control.loocv)
+# Summarize the results
+print(modelloocv3)
+```
+
+With our 3rd model our RMSE drastically reduces to 21.6. 
+
+<h3> Summary</h3>
+With all 3 models from LOOCV model 3 has lowest RMSE value. It shows that with increase in predictors the error rate reduces.
+
+
+<h2> Conclusion</h2>
+We conclude this experiment by analysis of RMSE from all the CV models we built.
+```{r}
+Dat5 <- data.frame(models = c("Kfold", "KNN", "LOOCV"), RMSE= c(20.75, 25.010, 21.655))
+Dat5
+dat4 <- data.frame(Models =c(1,2,3), RMSE= c(20.75, 25.010, 21.655))
+
+dat4
+
+ggplot(dat4, aes(x=Models, y=RMSE)) +
+  geom_point() +
+  geom_line() +
+     labs(x="Models", y="RMSE", title="RMSE changes in different CV models")
+```
+
+From all the CV models we built we see that K-fold analysis has lowest Error rate among all the CV models. Hence K-Fold is best Model for our dataset. 
+

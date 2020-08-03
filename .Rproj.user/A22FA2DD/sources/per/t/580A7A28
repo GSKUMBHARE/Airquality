@@ -1,0 +1,32 @@
+{
+    "id": "580A7A28",
+    "path": null,
+    "project_path": null,
+    "type": "r_dataframe",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1596426467115.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "expression": "airquality",
+        "caption": "airquality",
+        "totalObservations": "153",
+        "displayedObservations": "153",
+        "variables": "6",
+        "cacheKey": "AE420B64",
+        "object": "airquality",
+        "environment": "",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=airquality&cache_key=AE420B64&max_cols=50",
+        "preview": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 6354136462362179630,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1596426467115,
+    "read_only": false,
+    "read_only_alternatives": []
+}
